@@ -35,11 +35,11 @@ namespace Space_Invaders
 
         public bool IsActive()
         {
-            if(laserY>584)
+            if (laserY > 584)
             {
                 active = false;
             }
-            if(active)
+            if (active)
             {
                 Canvas.SetBottom(laser, laserY += laserspeed);
             }

@@ -29,8 +29,10 @@ namespace Space_Invaders
         private int playerShipY = 0;
         private double speed = 300;
 
-        private int delay;
-        private int laserDelay = 15;               
+        private int laserDelay;
+        private int laserDelayAmount = 15;
+        private int renderDelay;
+        private int renderDelayAmount = 30;
 
         HashSet<Key> keysPressed = new HashSet<Key>();
 
@@ -57,15 +59,16 @@ namespace Space_Invaders
             var now = DateTime.Now;
             double deltaTime = (now - lastUpdate).TotalSeconds;
             lastUpdate = now;
-            if(delay>0) delay -= 1;
+            if (laserDelay> 0) laserDelay-= 1;
+            if (renderDelay > 0) renderDelay -= 1;
 
             if ((keysPressed.Contains(Key.W) || keysPressed.Contains(Key.Up)) && playerShipY + (speed * deltaTime) + playerShip.Height < 600)
             {
                 Canvas.SetBottom(playerShip, playerShipY += (int)(speed * deltaTime));
             }
-            else if ((keysPressed.Contains(Key.S) || keysPressed.Contains(Key.Down)) && playerShipY - (speed*deltaTime) > 0)
+            else if ((keysPressed.Contains(Key.S) || keysPressed.Contains(Key.Down)) && playerShipY - (speed * deltaTime) > 0)
             {
-                Canvas.SetBottom(playerShip,  playerShipY -= (int)(speed * deltaTime));
+                Canvas.SetBottom(playerShip, playerShipY -= (int)(speed * deltaTime));
             }
             if ((keysPressed.Contains(Key.A) || keysPressed.Contains(Key.Left)) && playerShipX - (speed * deltaTime) > 0)
             {
@@ -75,20 +78,31 @@ namespace Space_Invaders
             {
                 Canvas.SetLeft(playerShip, playerShipX += (int)(speed * deltaTime));
             }
-            if (delay == 0 && keysPressed.Contains(Key.Space))
+            if (laserDelay == 0 && keysPressed.Contains(Key.Space))
             {
                 FireLaser();
-                delay = laserDelay;
+                laserDelay = laserDelayAmount;
             }
 
             RemoveLaser(); // remove it when laser goes off screen
 
             DetectHit();
-
-
+            
+            if (renderDelay == 0)
+            {
+                DrawEnemies();
+                renderDelay = renderDelayAmount;
+            }
+            
         }
 
-
+        private void DrawEnemies()
+        {
+            for (int i = 0; i < enemy1s.Count; i++)
+            {
+                enemy1s[i].Redraw();
+            }
+        }
 
         private void RemoveLaser()
         {
@@ -105,9 +119,9 @@ namespace Space_Invaders
 
         private void DetectHit()
         {
-            for (int i = enemy1s.Count-1; i >= 0; i--)
+            for (int i = enemy1s.Count - 1; i >= 0; i--)
             {
-                for (int j = activeLasers.Count-1; j >= 0; j--)
+                for (int j = activeLasers.Count - 1; j >= 0; j--)
                 {
                     if (activeLasers[j] != null && enemy1s[i] != null && enemy1s[i].TouchingLaser(activeLasers[j].LaserX, activeLasers[j].LaserY))
                     {
