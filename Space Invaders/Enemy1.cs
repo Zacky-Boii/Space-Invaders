@@ -26,6 +26,9 @@ namespace Space_Invaders
 
         private bool forwards = true;
         private int movements = 0; // how many times have they gone onto a new row
+        private int pixelsMoved = 0; // this will allow me to increase speed baseed off of enemies
+        private int lastPixelsMoved = 0;
+        private int moveBy; // how many pixels to move at once, the bigger it is the harder it is
 
         public Enemy1(Canvas canvas)
         {
@@ -36,10 +39,12 @@ namespace Space_Invaders
             Initialise();
         }
 
-        public void Redraw()
+        public void Redraw(int enemiesLeft, int enemyCount)
         {
-            if (forwards) enemyX += 1;
-            else enemyX -= 1;
+            moveBy = enemyCount / enemiesLeft;
+
+            if (forwards) enemyX += moveBy;
+            else enemyX -= moveBy;
 
             enemyY = (int)(maincanvas.Height - enemy.Height) - (int)(enemy.Height * spriteSeperation) * row;
 
@@ -102,7 +107,7 @@ namespace Space_Invaders
 
         public bool TouchingLaser(int laserX, int laserY)
         {
-            if ((enemyX - 2) <= laserX && laserX <= enemyX + enemy.Width && laserY >= (enemyY - enemy.Height / 2))
+            if (((enemyX - 2) < laserX && laserX < enemyX + enemy.Width) && (enemyY-14<=laserY && laserY<=(enemyY+enemy.Height-14)))// 14 is laser height ans 2 is laser width midpoint
             {
                 Debug.WriteLine(enemyNumber);
                 return true;

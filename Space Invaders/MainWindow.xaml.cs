@@ -32,13 +32,14 @@ namespace Space_Invaders
         private int laserDelay;
         private int laserDelayAmount = 15;
         private int renderDelay;
-        private int renderDelayAmount = 1;
+        private int renderDelayAmount = 2;
 
         HashSet<Key> keysPressed = new HashSet<Key>();
 
         List<Laser> activeLasers = new List<Laser>();
         List<Enemy1> enemy1s = new List<Enemy1>();
         private int enemy1Count = 30;
+        private int totalEnemies = 30;// add up all the enemies
 
         public MainWindow()
         {
@@ -108,7 +109,7 @@ namespace Space_Invaders
             }
             for (int i = enemy1s.Count-1; i >= 0; i--)
             {
-                enemy1s[i].Redraw();
+                enemy1s[i].Redraw(enemy1s.Count, totalEnemies);
             }
         }
 
