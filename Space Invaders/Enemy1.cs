@@ -25,9 +25,7 @@ namespace Space_Invaders
         private int rowPos;
 
         private bool forwards = true;
-
-        private int movements = 0; // how many times they've gone onto the next row
-        private int pixelsMoved = 0;
+        private int movements = 0; // how many times have they gone onto a new row
 
         public Enemy1(Canvas canvas)
         {
@@ -40,33 +38,8 @@ namespace Space_Invaders
 
         public void Redraw()
         {
-            pixelsMoved++;
-            if(movements != 0 && pixelsMoved == borderSeperation * 2)
-            {
-                movements++;
-                pixelsMoved = 0;
-                row++;
-
-                if (movements % 2 == 0) forwards = true;
-                else forwards = false;
-            }    
-            else if(movements == 0 && pixelsMoved == borderSeperation)//first movement will have just borser seperation to move due to the way they are initialised
-            {
-                movements++;
-                pixelsMoved = 0;
-                row++;
-
-                forwards = false;
-            }
-
-            if (forwards)
-            {
-                enemyX += 1;
-            }
-            else 
-            {
-                enemyX -= 1;
-            }
+            if (forwards) enemyX += 1;
+            else enemyX -= 1;
 
             enemyY = (int)(maincanvas.Height - enemy.Height) - (int)(enemy.Height * spriteSeperation) * row;
 
@@ -74,7 +47,29 @@ namespace Space_Invaders
             Canvas.SetLeft(enemy, enemyX);
         }
 
+        public bool TouchingBorder()
+        {
+            //right hand border
+            if (enemyX + enemy.Width >= maincanvas.Width)
+            {
+                return true;
+            }
+            //left hand border
+            if (enemyX <= 0)
+            {
+                return true;
+            }
+            return false;
+        }
 
+        public void AddRow()
+        {
+            row++;
+            movements++;
+
+            if (movements % 2 == 0) forwards = true;
+            else forwards = false;
+        }
 
         public void Initialise()
         {

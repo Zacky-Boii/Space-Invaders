@@ -32,7 +32,7 @@ namespace Space_Invaders
         private int laserDelay;
         private int laserDelayAmount = 15;
         private int renderDelay;
-        private int renderDelayAmount = 2;
+        private int renderDelayAmount = 1;
 
         HashSet<Key> keysPressed = new HashSet<Key>();
 
@@ -98,9 +98,25 @@ namespace Space_Invaders
 
         private void DrawEnemies()
         {
+            for (int i = enemy1s.Count - 1; i >= 0; i--)
+            {
+                if (enemy1s[i].TouchingBorder())
+                {
+                    IncrementRow();
+                    break;
+                }
+            }
             for (int i = enemy1s.Count-1; i >= 0; i--)
             {
                 enemy1s[i].Redraw();
+            }
+        }
+
+        private void IncrementRow()
+        {
+            for (int i = enemy1s.Count - 1; i >= 0; i--)
+            {
+                enemy1s[i].AddRow();
             }
         }
 
