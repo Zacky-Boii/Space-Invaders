@@ -87,13 +87,13 @@ namespace Space_Invaders
             RemoveLaser(); // remove it when laser goes off screen
 
             DetectHit();
-            
+            /*
             if (renderDelay == 0)
             {
                 DrawEnemies();
                 renderDelay = renderDelayAmount;
             }
-            
+            */
         }
 
         private void DrawEnemies()
