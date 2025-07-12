@@ -21,6 +21,14 @@ namespace Space_Invaders
         private double spriteSeperation = 1.2; // multiplier
         private int borderSeperation = 30; // pixels
 
+        private int enemiesPerRow;
+        private int rowPos;
+
+        private bool forwards = true;
+
+        private int movements = 0; // how many times they've gone onto the next row
+        private int pixelsMoved = 0;
+
         public Enemy1(Canvas canvas)
         {
             enemyNumber = enemyCount;
@@ -32,19 +40,41 @@ namespace Space_Invaders
 
         public void Redraw()
         {
-            // check if the sprite will go past 570 pixels which is the border i want currently
-            if (enemyX + (int)(enemy.Width * spriteSeperation * 2) > (maincanvas.Width - borderSeperation))
+            pixelsMoved++;
+            if(movements != 0 && pixelsMoved == borderSeperation * 2)
             {
+                movements++;
+                pixelsMoved = 0;
                 row++;
-                enemyX = -(int)(enemy.Width * spriteSeperation) + borderSeperation;
+
+                if (movements % 2 == 0) forwards = true;
+                else forwards = false;
+            }    
+            else if(movements == 0 && pixelsMoved == borderSeperation)//first movement will have just borser seperation to move due to the way they are initialised
+            {
+                movements++;
+                pixelsMoved = 0;
+                row++;
+
+                forwards = false;
             }
 
-            enemyX = (int)(enemyX + (enemy.Width * spriteSeperation) % maincanvas.Width);
-            enemyY = 570 - (int)(enemy.Height * spriteSeperation) * row;
+            if (forwards)
+            {
+                enemyX += 1;
+            }
+            else 
+            {
+                enemyX -= 1;
+            }
+
+            enemyY = (int)(maincanvas.Height - enemy.Height) - (int)(enemy.Height * spriteSeperation) * row;
 
             Canvas.SetBottom(enemy, enemyY);
             Canvas.SetLeft(enemy, enemyX);
         }
+
+
 
         public void Initialise()
         {
@@ -53,9 +83,9 @@ namespace Space_Invaders
             enemy.Height = 30;
             enemy.Width = 30;
 
-            int enemiesPerRow = (int)Math.Floor((maincanvas.Width - borderSeperation * 2) / (enemy.Width * spriteSeperation));
+            enemiesPerRow = (int)Math.Floor((maincanvas.Width - borderSeperation * 2) / (enemy.Width * spriteSeperation));
             row = enemyNumber / enemiesPerRow;
-            int rowPos = enemyNumber % (enemiesPerRow);
+            rowPos = enemyNumber % (enemiesPerRow);
             Debug.WriteLine(enemiesPerRow);
             if (rowPos != 0)
             {

@@ -32,13 +32,13 @@ namespace Space_Invaders
         private int laserDelay;
         private int laserDelayAmount = 15;
         private int renderDelay;
-        private int renderDelayAmount = 30;
+        private int renderDelayAmount = 2;
 
         HashSet<Key> keysPressed = new HashSet<Key>();
 
         List<Laser> activeLasers = new List<Laser>();
         List<Enemy1> enemy1s = new List<Enemy1>();
-
+        private int enemy1Count = 30;
 
         public MainWindow()
         {
@@ -87,18 +87,18 @@ namespace Space_Invaders
             RemoveLaser(); // remove it when laser goes off screen
 
             DetectHit();
-            /*
+            
             if (renderDelay == 0)
             {
                 DrawEnemies();
                 renderDelay = renderDelayAmount;
             }
-            */
+            
         }
 
         private void DrawEnemies()
         {
-            for (int i = 0; i < enemy1s.Count; i++)
+            for (int i = enemy1s.Count-1; i >= 0; i--)
             {
                 enemy1s[i].Redraw();
             }
@@ -143,7 +143,8 @@ namespace Space_Invaders
 
         private void InitialiseEnemys()
         {
-            for (int i = 0; i < 20; i++)
+            //enemy 1s
+            for (int i = 0; i < enemy1Count; i++)
             {
                 enemy1s.Add(new Enemy1(maincanvas));
             }
