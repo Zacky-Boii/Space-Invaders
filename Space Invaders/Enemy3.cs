@@ -9,18 +9,18 @@ using System.Windows.Media.Imaging;
 
 namespace Space_Invaders
 {
-    internal class Enemy1 : Enemies
+    internal class Enemy3 : Enemies
     {
-        const string imagePath = "C:\\School\\Projects\\Space Invaders\\Images\\sophia.png";
+        const string imagePath = "C:\\School\\Projects\\Space Invaders\\Images\\zain.png";
 
-        public Enemy1(Canvas maincanvas) : base(maincanvas)
+        public Enemy3(Canvas maincanvas) : base(maincanvas)
         {
 
         }
 
         public int AddPoints()
         {
-            return 10;
+            return 30;
         }
 
         public override void AddImageSource()

@@ -18,6 +18,13 @@ namespace Space_Invaders
     /// </summary>
     public partial class MainWindow : Window
     {
+        private bool gameOver = false;
+        private Image gameOverScreen = new Image();
+        private string gameOverScreenPath = "C:\\School\\Projects\\Space Invaders\\Images\\gameover.png";
+
+        private Button restart = new Button();
+        private Button nextStage = new Button();
+
         private Canvas maincanvas;
         private Image playerShip;
         private Image laser;
@@ -37,9 +44,19 @@ namespace Space_Invaders
         HashSet<Key> keysPressed = new HashSet<Key>();
 
         List<Laser> activeLasers = new List<Laser>();
+
         List<Enemy1> enemy1s = new List<Enemy1>();
         private int enemy1Count = 30;
-        private int totalEnemies = 30;// add up all the enemies
+
+        List<Enemy2> enemy2s = new List<Enemy2>();
+        private int enemy2Count = 30;
+
+        List<Enemy3> enemy3s = new List<Enemy3>();
+        private int enemy3Count = 15;
+
+        private int totalEnemies = 75;// add up all the enemies
+
+        private int score;
 
         public MainWindow()
         {
@@ -94,30 +111,143 @@ namespace Space_Invaders
                 DrawEnemies();
                 renderDelay = renderDelayAmount;
             }
-            
+
+            CheckGameState();
+        }
+        private void CheckGameState()
+        {
+            //check if any ships are touching the player
+            for (int i = enemy1s.Count - 1; i >= 0; i--)
+            {
+                if (enemy1s[i].TouchingPlayer(playerShipX, playerShipY, playerShip))
+                {
+                    gameOver = true;
+                }
+            }
+
+            for (int i = enemy2s.Count - 1; i >= 0; i--)
+            {
+                if (enemy2s[i].TouchingPlayer(playerShipX, playerShipY, playerShip))
+                {
+                    gameOver = true;
+                }
+            }
+
+            for (int i = enemy3s.Count - 1; i >= 0; i--)
+            {
+                if (enemy3s[i].TouchingPlayer(playerShipX, playerShipY, playerShip))
+                {
+                    gameOver = true;
+                }
+            }
+
+            if(gameOver)
+            {
+                ClearScreen();
+                gameOverScreen.Source = new BitmapImage(new Uri(gameOverScreenPath));
+                gameOverScreen.Height = 300;
+                gameOverScreen.Width = 600;
+                maincanvas.Children.Add(gameOverScreen);
+                Canvas.SetTop(gameOverScreen, maincanvas.Height/4);
+                CompositionTarget.Rendering -= GameLoop;
+                restart.Content = "Play Again?";
+            }
+        }
+
+        private void ClearScreen()
+        {
+            for (int i = enemy1s.Count - 1; i >= 0; i--)
+            {
+                maincanvas.Children.Remove(enemy1s[i].enemy);
+            }
+
+            for (int i = enemy2s.Count - 1; i >= 0; i--)
+            {
+                maincanvas.Children.Remove(enemy2s[i].enemy);
+            }
+
+            for (int i = enemy3s.Count - 1; i >= 0; i--)
+            {
+                maincanvas.Children.Remove(enemy3s[i].enemy);
+            }
+            maincanvas.Children.Remove(playerShip);
         }
 
         private void DrawEnemies()
         {
+            int enemiesRemaining = enemy1s.Count + enemy2s.Count + enemy3s.Count;
+            bool addedRow = false;
+
+            //enemy 1s
             for (int i = enemy1s.Count - 1; i >= 0; i--)
             {
                 if (enemy1s[i].TouchingBorder())
                 {
                     IncrementRow();
+                    addedRow = true;
                     break;
                 }
             }
             for (int i = enemy1s.Count-1; i >= 0; i--)
             {
-                enemy1s[i].Redraw(enemy1s.Count, totalEnemies);
+                enemy1s[i].Redraw(enemiesRemaining, totalEnemies);
+            }
+
+            //enemy 2s
+            if (!addedRow)
+            {
+                for (int i = enemy2s.Count - 1; i >= 0; i--)
+                {
+                    if (enemy2s[i].TouchingBorder())
+                    {
+                        IncrementRow();
+                        addedRow = true;
+                        break;
+                    }
+                }
+            }
+            for (int i = enemy2s.Count - 1; i >= 0; i--)
+            {
+                enemy2s[i].Redraw(enemiesRemaining, totalEnemies);
+            }
+
+            //enemy 3s
+            if(!addedRow)
+            {
+                for (int i = enemy3s.Count - 1; i >= 0; i--)
+                {
+                    if (enemy3s[i].TouchingBorder())
+                    {
+                        IncrementRow();
+                        addedRow = true;
+                        break;
+                    }
+                }
+            }
+            for (int i = enemy3s.Count - 1; i >= 0; i--)
+            {
+                enemy3s[i].Redraw(enemiesRemaining, totalEnemies);
             }
         }
 
         private void IncrementRow()
         {
+            //enemy 1s
             for (int i = enemy1s.Count - 1; i >= 0; i--)
             {
                 enemy1s[i].AddRow();
+            }
+
+            //enemy 2s
+            for (int i = enemy2s.Count - 1; i >= 0; i--)
+            {
+                enemy2s[i].AddRow();
+            }
+
+            //enemy 3s
+            for (int i = enemy3s.Count - 1; i >= 0; i--)
+            {
+                enemy3s[i].AddRow();
             }
         }
 
@@ -140,20 +270,65 @@ namespace Space_Invaders
             {
                 for (int j = activeLasers.Count - 1; j >= 0; j--)
                 {
-                    if (activeLasers[j] != null && enemy1s[i] != null && enemy1s[i].TouchingLaser(activeLasers[j].LaserX, activeLasers[j].LaserY))
+                    if (enemy1s[i].TouchingLaser(activeLasers[j].LaserX, activeLasers[j].LaserY))
                     {
+                        score += enemy1s[i].AddPoints();
                         //remove enemy once touched by laser
                         maincanvas.Children.Remove(enemy1s[i].enemy);
                         enemy1s.Remove(enemy1s[i]);
+
                         //remove laser once enemy has been killed so it doesnt kill anyone else
                         maincanvas.Children.Remove(activeLasers[j].laser);
                         activeLasers.Remove(activeLasers[j]);
+
                         //no need to check for other lasers once this enemy has been removed
                         break;
                     }
                 }
-
             }
+
+            for (int i = enemy2s.Count - 1; i >= 0; i--)
+            {
+                for (int j = activeLasers.Count - 1; j >= 0; j--)
+                {
+                    if (enemy2s[i].TouchingLaser(activeLasers[j].LaserX, activeLasers[j].LaserY))
+                    {
+                        score += enemy2s[i].AddPoints();
+                        //remove enemy once touched by laser
+                        maincanvas.Children.Remove(enemy2s[i].enemy);
+                        enemy2s.Remove(enemy2s[i]);
+
+                        //remove laser once enemy has been killed so it doesnt kill anyone else
+                        maincanvas.Children.Remove(activeLasers[j].laser);
+                        activeLasers.Remove(activeLasers[j]);
+
+                        //no need to check for other lasers once this enemy has been removed
+                        break;
+                    }
+                }
+            }
+
+            for (int i = enemy3s.Count - 1; i >= 0; i--)
+            {
+                for (int j = activeLasers.Count - 1; j >= 0; j--)
+                {
+                    if (enemy3s[i].TouchingLaser(activeLasers[j].LaserX, activeLasers[j].LaserY))
+                    {
+                        score += enemy3s[i].AddPoints();
+                        //remove enemy once touched by laser
+                        maincanvas.Children.Remove(enemy3s[i].enemy);
+                        enemy3s.Remove(enemy3s[i]);
+
+                        //remove laser once enemy has been killed so it doesnt kill anyone else
+                        maincanvas.Children.Remove(activeLasers[j].laser);
+                        activeLasers.Remove(activeLasers[j]);
+
+                        //no need to check for other lasers once this enemy has been removed
+                        break;
+                    }
+                }
+            }
+
 
 
         }
@@ -164,6 +339,18 @@ namespace Space_Invaders
             for (int i = 0; i < enemy1Count; i++)
             {
                 enemy1s.Add(new Enemy1(maincanvas));
+            }
+
+            //enemy 2s
+            for (int i = 0; i < enemy2Count; i++)
+            {
+                enemy2s.Add(new Enemy2(maincanvas));
+            }
+
+            //enemy 3s
+            for (int i = 0; i < enemy3Count; i++)
+            {
+                enemy3s.Add(new Enemy3(maincanvas));
             }
         }
 
@@ -177,7 +364,7 @@ namespace Space_Invaders
             Canvas.SetBottom(laser, laserY);
             Canvas.SetLeft(laser, laserX);
 
-            activeLasers.Add(new Laser(laserY, laserX, laser));
+            activeLasers.Add(new Laser(laserY, laserX, laser, maincanvas));
         }
 
         private void Key_Down(object sender, KeyEventArgs e)
@@ -189,7 +376,7 @@ namespace Space_Invaders
         {
             keysPressed.Remove(e.Key);
         }
-
+        
         private void SetupCanvas()
         {
             this.SizeToContent = SizeToContent.WidthAndHeight;
@@ -207,9 +394,11 @@ namespace Space_Invaders
             playerShip.Source = new BitmapImage(new Uri(playerShipPath));
             playerShip.Height = 57;
             playerShip.Width = 57;
+            playerShipX = (int)((maincanvas.Width / 2) - (playerShip.Width / 2));
 
-            Canvas.SetLeft(playerShip, 0);
-            Canvas.SetBottom(playerShip, 0);
+
+            Canvas.SetLeft(playerShip, playerShipX);
+            Canvas.SetBottom(playerShip, playerShipY);
 
             maincanvas.Children.Add(playerShip);
         }

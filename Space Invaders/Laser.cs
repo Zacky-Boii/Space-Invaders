@@ -15,6 +15,7 @@ namespace Space_Invaders
         private bool active = true;
         public Image laser;
         private int laserspeed = 5;
+        private Canvas maincanvas;
 
         public int LaserY
         {
@@ -26,16 +27,17 @@ namespace Space_Invaders
             get => laserX;
         }
 
-        public Laser(int Y, int X, Image laserImage)
+        public Laser(int Y, int X, Image laserImage, Canvas mainCanvas)
         {
             laserY = Y;
             laserX = X;
             laser = laserImage;
+            maincanvas = mainCanvas;
         }
 
         public bool IsActive()
         {
-            if (laserY > 584)
+            if (laserY > maincanvas.Height - laser.Height)
             {
                 active = false;
             }
