@@ -48,7 +48,7 @@ namespace Space_Invaders
             double progressRatio = (double)(enemyCount - enemiesLeft) / enemyCount;
 
             double baseSpeed = 20;
-            double maxSpeed = 300; 
+            double maxSpeed = 100; 
             double stageMultiplier = 1 + 0.25 * (stageNumber - 1); // each stage gets 25% faster
 
             // interpolate between baseSpeed and maxSpeed based on how many enemies are left
@@ -72,21 +72,21 @@ namespace Space_Invaders
             Canvas.SetLeft(enemy, enemyX);
         }
 
-        public bool TouchingBorder()
+        public char TouchingBorder()
         {
             //right hand border
             if (enemyX + enemy.Width > maincanvas.Width)
             {
                 movements++;
-                return true;
+                return 'r';
             }
             //left hand border
             if (enemyX < 0)
             {
                 movements++;
-                return true;
+                return 'l';
             }
-            return false;
+            return ' ';
         }
 
         public bool TouchingPlayer(double playerX, double playerY, Image player)

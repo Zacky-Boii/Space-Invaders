@@ -80,6 +80,8 @@ namespace Space_Invaders
         private void GameLoop(object sender, EventArgs e)
         {
             scoreDisplay.Text = "Score: " + score;
+            levelDisplay.Text = "Level: " + levelNumber;
+
             //use delta time so it doesnt matter what monitor refresh rate is
             var now = DateTime.Now;
             double deltaTime = (now - lastUpdate).TotalSeconds;
@@ -302,47 +304,50 @@ namespace Space_Invaders
 
             for (int i = enemy1s.Count - 1; i >= 0; i--)
             {
-                if (enemy1s[i].TouchingBorder())
+                char border = enemy1s[i].TouchingBorder();
+                if (border != ' ')
                 {
-                    UndoLastMovement();
+                    UndoLastMovement(border);
                     IncrementRow();
                     return;
                 }
             }
             for (int i = enemy2s.Count - 1; i >= 0; i--)
             {
-                if (enemy2s[i].TouchingBorder())
+                char border = enemy2s[i].TouchingBorder();
+                if (border != ' ')
                 {
-                    UndoLastMovement();
+                    UndoLastMovement(border);
                     IncrementRow();
                     return;
                 }
             }
             for (int i = enemy3s.Count - 1; i >= 0; i--)
             {
-                if (enemy3s[i].TouchingBorder())
+                char border = enemy3s[i].TouchingBorder();
+                if (border != ' ')
                 {
-                    UndoLastMovement();
+                    UndoLastMovement(border);
                     IncrementRow();                  
                     return;
                 }
             }
         }
-        private void UndoLastMovement()
+        private void UndoLastMovement(char border)
         {
             for (int i = enemy1s.Count - 1; i >= 0; i--)
             {
-                if(enemy1s[i].enemyX<0) enemy1s[i].enemyX += enemy1s[i].moveBy;
+                if (border == 'l') enemy1s[i].enemyX += enemy1s[i].moveBy;
                 else enemy1s[i].enemyX -= enemy1s[i].moveBy;
             }
             for (int i = enemy2s.Count - 1; i >= 0; i--)
             {
-                if (enemy2s[i].enemyX < 0) enemy2s[i].enemyX += enemy2s[i].moveBy;
+                if (border == 'l') enemy2s[i].enemyX += enemy2s[i].moveBy;
                 else enemy2s[i].enemyX -= enemy2s[i].moveBy;
             }
             for (int i = enemy3s.Count - 1; i >= 0; i--)
             {
-                if (enemy3s[i].enemyX < 0) enemy3s[i].enemyX += enemy3s[i].moveBy;
+                if (border == 'l') enemy3s[i].enemyX += enemy3s[i].moveBy;
                 else enemy3s[i].enemyX -= enemy3s[i].moveBy;
             }
         }
@@ -390,7 +395,7 @@ namespace Space_Invaders
                 {
                     if (enemy1s[i].TouchingLaser(activeLasers[j].LaserX, activeLasers[j].LaserY))
                     {
-                        score += enemy1s[i].AddPoints();
+                        score += enemy1s[i].AddPoints(levelNumber);
                         //remove enemy once touched by laser
                         maincanvas.Children.Remove(enemy1s[i].enemy);
                         enemy1s.Remove(enemy1s[i]);
@@ -411,7 +416,7 @@ namespace Space_Invaders
                 {
                     if (enemy2s[i].TouchingLaser(activeLasers[j].LaserX, activeLasers[j].LaserY))
                     {
-                        score += enemy2s[i].AddPoints();
+                        score += enemy2s[i].AddPoints(levelNumber);
                         //remove enemy once touched by laser
                         maincanvas.Children.Remove(enemy2s[i].enemy);
                         enemy2s.Remove(enemy2s[i]);
@@ -432,7 +437,7 @@ namespace Space_Invaders
                 {
                     if (enemy3s[i].TouchingLaser(activeLasers[j].LaserX, activeLasers[j].LaserY))
                     {
-                        score += enemy3s[i].AddPoints();
+                        score += enemy3s[i].AddPoints(levelNumber);
                         //remove enemy once touched by laser
                         maincanvas.Children.Remove(enemy3s[i].enemy);
                         enemy3s.Remove(enemy3s[i]);

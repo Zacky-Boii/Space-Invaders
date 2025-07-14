@@ -12,15 +12,16 @@ namespace Space_Invaders
     internal class Enemy1 : Enemies
     {
         const string imagePath = "C:\\School\\Projects\\Space Invaders\\Images\\sophia.png";
+        private int basePoints = 10;
 
         public Enemy1(Canvas maincanvas) : base(maincanvas)
         {
 
         }
 
-        public int AddPoints()
+        public int AddPoints(int levelNumber)
         {
-            return 10;
+            return basePoints * levelNumber;
         }
 
         public override void AddImageSource()
