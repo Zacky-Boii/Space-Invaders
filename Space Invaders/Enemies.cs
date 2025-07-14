@@ -6,7 +6,7 @@ namespace Space_Invaders
 {
     public class Enemies
     {
-        private static int enemyCount = 0;
+        public static int enemyCount = 0;
         public int enemyNumber;
 
         private string errorImage = "C:\\School\\Projects\\Space Invaders\\Images\\sophia.png";
@@ -37,14 +37,17 @@ namespace Space_Invaders
             Initialise();
         }
 
-        public void Redraw(int enemiesLeft, int enemyCount)
+        public void Redraw(int enemiesLeft, int stageNumber)
         {
-            moveBy = enemyCount / enemiesLeft;
+            int maxSpeed = 50;
+            int baseSpeed = stageNumber*2;
+            double speedMult = enemyCount/2;
+            moveBy = Math.Min(maxSpeed, baseSpeed + (int)(speedMult / enemiesLeft));
 
             if (forwards) enemyX += moveBy;
             else enemyX -= moveBy;
 
-            enemyY = (int)(maincanvas.Height - enemy.Height) - (int)(enemy.Height * spriteSeperation) * row;
+            enemyY = (int)(maincanvas.Height - enemy.Height - 30) - (int)(enemy.Height * spriteSeperation) * row;
 
             Canvas.SetBottom(enemy, enemyY);
             Canvas.SetLeft(enemy, enemyX);
@@ -122,7 +125,7 @@ namespace Space_Invaders
                 else enemyX = (borderSeperation + (int)(rowPos * (enemy.Width * spriteSeperation) + borderSeperation)) % (int)maincanvas.Width - borderSeperation;
             }
             else enemyX = borderSeperation;
-            enemyY = (int)(maincanvas.Height - enemy.Height) - (int)(enemy.Height * spriteSeperation) * row;
+            enemyY = (int)(maincanvas.Height - enemy.Height - 30) - (int)(enemy.Height * spriteSeperation) * row;
 
             maincanvas.Children.Add(enemy);
 

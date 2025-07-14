@@ -23,7 +23,14 @@ namespace Space_Invaders
         private string gameOverScreenPath = "C:\\School\\Projects\\Space Invaders\\Images\\gameover.png";
 
         private Button restart = new Button();
-        private Button nextStage = new Button();
+
+        private Button nextLevelButton = new Button();
+        private Image nextLevelScreen = new Image();
+        private string nextLevelScreenPath = "C:\\School\\Projects\\Space Invaders\\Images\\levelup.png";
+
+        private TextBox scoreDisplay = new TextBox();
+        private TextBox levelDisplay = new TextBox();
+        private int levelNumber = 1;
 
         private Canvas maincanvas;
         private Image playerShip;
@@ -34,12 +41,12 @@ namespace Space_Invaders
 
         private int playerShipX = 0;
         private int playerShipY = 0;
-        private double speed = 300;
+        private double speed = 300; //speed of game
 
         private int laserDelay;
-        private int laserDelayAmount = 15;
+        private int laserDelayAmount = 1; // in frames
         private int renderDelay;
-        private int renderDelayAmount = 2;
+        private int renderDelayAmount = 1; // in frames
 
         HashSet<Key> keysPressed = new HashSet<Key>();
 
@@ -53,8 +60,6 @@ namespace Space_Invaders
 
         List<Enemy3> enemy3s = new List<Enemy3>();
         private int enemy3Count = 15;
-
-        private int totalEnemies = 75;// add up all the enemies
 
         private int score;
 
@@ -73,6 +78,7 @@ namespace Space_Invaders
         DateTime lastUpdate = DateTime.Now;
         private void GameLoop(object sender, EventArgs e)
         {
+            scoreDisplay.Text = "Score: " + score;
             //use delta time so it doesnt matter what monitor refresh rate is
             var now = DateTime.Now;
             double deltaTime = (now - lastUpdate).TotalSeconds;
@@ -113,7 +119,9 @@ namespace Space_Invaders
             }
 
             CheckGameState();
+
         }
+
         private void CheckGameState()
         {
             //check if any ships are touching the player
@@ -141,17 +149,109 @@ namespace Space_Invaders
                 }
             }
 
+            //check if all enemies are dead
+            if(enemy1s.Count == 0 && enemy2s.Count == 0 && enemy3s.Count == 0)
+            {
+                NextLevel();
+            }
+
             if(gameOver)
             {
-                ClearScreen();
-                gameOverScreen.Source = new BitmapImage(new Uri(gameOverScreenPath));
-                gameOverScreen.Height = 300;
-                gameOverScreen.Width = 600;
-                maincanvas.Children.Add(gameOverScreen);
-                Canvas.SetTop(gameOverScreen, maincanvas.Height/4);
-                CompositionTarget.Rendering -= GameLoop;
-                restart.Content = "Play Again?";
+                GameOver();
             }
+        }
+
+        private void NextLevel()
+        {
+            CompositionTarget.Rendering -= GameLoop;
+
+            ClearScreen();
+
+            nextLevelScreen.Source = new BitmapImage(new Uri(nextLevelScreenPath));
+            nextLevelScreen.Height = 300;
+            nextLevelScreen.Width = 600;
+            maincanvas.Children.Add(nextLevelScreen);
+
+            nextLevelButton.Content = "Next Level!";
+            nextLevelButton.Height = 50;
+            nextLevelButton.Width = 200;
+            Canvas.SetLeft(nextLevelButton, (maincanvas.Width / 2) - (nextLevelButton.Width / 2));
+            Canvas.SetTop(nextLevelButton, (maincanvas.Height / 2) - (nextLevelButton.Height / 2));
+
+            maincanvas.Children.Add(nextLevelButton);
+
+            nextLevelButton.Click += NextLevelButton_Click;
+        }
+        private void NextLevelButton_Click(object sender, RoutedEventArgs e)
+        {
+            InitialiseNextLevel();
+        }
+        private void InitialiseNextLevel()
+        {
+            nextLevelButton.Click -= NextLevelButton_Click;
+
+            levelNumber++;
+
+            ClearScreen();
+
+            maincanvas.Children.Remove(nextLevelScreen);
+            maincanvas.Children.Remove(nextLevelButton);
+
+            Enemies.enemyCount = 0;
+            playerShipX = (int)((maincanvas.Width / 2) - (playerShip.Width / 2));
+            playerShipY = 0;
+
+            InitialiseEnemys();
+            CompositionTarget.Rendering += GameLoop;
+        }
+
+        private void GameOver()
+        {
+            CompositionTarget.Rendering -= GameLoop;
+
+            ClearScreen();
+
+            gameOverScreen.Source = new BitmapImage(new Uri(gameOverScreenPath));
+            gameOverScreen.Height = 300;
+            gameOverScreen.Width = 600;
+            maincanvas.Children.Add(gameOverScreen);
+            Canvas.SetTop(gameOverScreen, (maincanvas.Height/2) - (gameOverScreen.Height/2));
+
+            restart.Content = "Play Again?";
+            restart.Height = 50;
+            restart.Width = 200;
+            Canvas.SetLeft(restart, (maincanvas.Width/2) - (restart.Width / 2));
+            Canvas.SetTop(restart, 450);
+
+            maincanvas.Children.Add(restart);
+
+            restart.Click += RestartButton_Click;
+            
+        }
+        private void RestartButton_Click(object sender, RoutedEventArgs e)
+        {
+            Restart();
+        }
+        private void Restart()
+        {
+            restart.Click -= RestartButton_Click;
+
+            maincanvas.Children.Remove(gameOverScreen);
+            maincanvas.Children.Remove(restart);
+
+            ClearScreen();
+
+            score = 0;
+            levelNumber = 1;
+
+            Enemies.enemyCount = 0;
+            playerShipX = (int)((maincanvas.Width / 2) - (playerShip.Width / 2));
+            playerShipY = 0;
+
+            gameOver = false;
+
+            InitialiseEnemys();
+            CompositionTarget.Rendering += GameLoop;
         }
 
         private void ClearScreen()
@@ -159,18 +259,26 @@ namespace Space_Invaders
             for (int i = enemy1s.Count - 1; i >= 0; i--)
             {
                 maincanvas.Children.Remove(enemy1s[i].enemy);
+                enemy1s.Remove(enemy1s[i]);
             }
 
             for (int i = enemy2s.Count - 1; i >= 0; i--)
             {
                 maincanvas.Children.Remove(enemy2s[i].enemy);
+                enemy2s.Remove(enemy2s[i]);
             }
 
             for (int i = enemy3s.Count - 1; i >= 0; i--)
             {
                 maincanvas.Children.Remove(enemy3s[i].enemy);
+                enemy3s.Remove(enemy3s[i]);
             }
-            maincanvas.Children.Remove(playerShip);
+            for (int j = activeLasers.Count - 1; j >= 0; j--)
+            {
+                maincanvas.Children.Remove(activeLasers[j].laser);
+                activeLasers.Remove(activeLasers[j]);
+            }
+                maincanvas.Children.Remove(playerShip);
         }
 
         private void DrawEnemies()
@@ -190,7 +298,7 @@ namespace Space_Invaders
             }
             for (int i = enemy1s.Count-1; i >= 0; i--)
             {
-                enemy1s[i].Redraw(enemiesRemaining, totalEnemies);
+                enemy1s[i].Redraw(enemiesRemaining, levelNumber);
             }
 
             //enemy 2s
@@ -208,7 +316,7 @@ namespace Space_Invaders
             }
             for (int i = enemy2s.Count - 1; i >= 0; i--)
             {
-                enemy2s[i].Redraw(enemiesRemaining, totalEnemies);
+                enemy2s[i].Redraw(enemiesRemaining, levelNumber);
             }
 
             //enemy 3s
@@ -226,7 +334,7 @@ namespace Space_Invaders
             }
             for (int i = enemy3s.Count - 1; i >= 0; i--)
             {
-                enemy3s[i].Redraw(enemiesRemaining, totalEnemies);
+                enemy3s[i].Redraw(enemiesRemaining, levelNumber);
             }
         }
 
@@ -328,17 +436,19 @@ namespace Space_Invaders
                     }
                 }
             }
-
-
-
         }
 
         private void InitialiseEnemys()
         {
-            //enemy 1s
-            for (int i = 0; i < enemy1Count; i++)
+            Canvas.SetLeft(playerShip, playerShipX);
+            Canvas.SetBottom(playerShip, playerShipY);
+
+            maincanvas.Children.Add(playerShip);
+
+            //enemy 3s
+            for (int i = 0; i < enemy3Count; i++)
             {
-                enemy1s.Add(new Enemy1(maincanvas));
+                enemy3s.Add(new Enemy3(maincanvas));
             }
 
             //enemy 2s
@@ -347,10 +457,10 @@ namespace Space_Invaders
                 enemy2s.Add(new Enemy2(maincanvas));
             }
 
-            //enemy 3s
-            for (int i = 0; i < enemy3Count; i++)
+            //enemy 1s
+            for (int i = 0; i < enemy1Count; i++)
             {
-                enemy3s.Add(new Enemy3(maincanvas));
+                enemy1s.Add(new Enemy1(maincanvas));
             }
         }
 
@@ -396,11 +506,42 @@ namespace Space_Invaders
             playerShip.Width = 57;
             playerShipX = (int)((maincanvas.Width / 2) - (playerShip.Width / 2));
 
+            scoreDisplay.Text = "Score: " + score;
+            scoreDisplay.Height = 16;
+            scoreDisplay.Width = maincanvas.Width;
+            scoreDisplay.Background = Brushes.Black;
+            scoreDisplay.BorderBrush = Brushes.Black;
+            scoreDisplay.Foreground = Brushes.White;
+            scoreDisplay.FontWeight = FontWeights.Bold;
+            scoreDisplay.IsReadOnly = true;
+            scoreDisplay.IsHitTestVisible = false;
+            maincanvas.Children.Add(scoreDisplay);
 
-            Canvas.SetLeft(playerShip, playerShipX);
-            Canvas.SetBottom(playerShip, playerShipY);
+            TextBox Title = new TextBox();
+            Title.Text = "SPACE INVADERS";
+            Title.Height = 30;
+            Title.Width = 200;
+            Title.Background = Brushes.Black;
+            Title.BorderBrush = Brushes.Black;
+            Title.Foreground = Brushes.White;
+            Title.FontSize = 22.5;
+            Title.FontWeight = FontWeights.ExtraBold;
+            Title.IsReadOnly = true;
+            Title.IsHitTestVisible = false;
+            Canvas.SetLeft(Title, (maincanvas.Width / 2) - (Title.Width / 2));
+            maincanvas.Children.Add(Title);
 
-            maincanvas.Children.Add(playerShip);
+            levelDisplay.Text = "Level: " + levelNumber;
+            levelDisplay.Height = 18;
+            levelDisplay.Width = 60;
+            levelDisplay.Background = Brushes.Black;
+            levelDisplay.BorderBrush = Brushes.Black;
+            levelDisplay.Foreground = Brushes.White;
+            levelDisplay.FontWeight = FontWeights.Bold;
+            levelDisplay.IsReadOnly = true;
+            levelDisplay.IsHitTestVisible = false;
+            Canvas.SetLeft(levelDisplay, maincanvas.Width-levelDisplay.Width);
+            maincanvas.Children.Add(levelDisplay);
         }
 
     }
