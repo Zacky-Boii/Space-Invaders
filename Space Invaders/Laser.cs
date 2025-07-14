@@ -10,24 +10,24 @@ namespace Space_Invaders
 {
     public class Laser
     {
-        private int laserY;
-        private int laserX;
+        private double laserY;
+        private double laserX;
         private bool active = true;
         public Image laser;
         private int laserspeed = 5;
         private Canvas maincanvas;
 
-        public int LaserY
+        public double LaserY
         {
             get => laserY;
         }
 
-        public int LaserX
+        public double LaserX
         {
             get => laserX;
         }
 
-        public Laser(int Y, int X, Image laserImage, Canvas mainCanvas)
+        public Laser(double Y, double X, Image laserImage, Canvas mainCanvas)
         {
             laserY = Y;
             laserX = X;

@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
@@ -39,8 +40,8 @@ namespace Space_Invaders
         private string playerShipPath = "C:\\School\\Projects\\Space Invaders\\Images\\Player Ship.png";
         private string laserPath = "C:\\School\\Projects\\Space Invaders\\Images\\laser.png";
 
-        private int playerShipX = 0;
-        private int playerShipY = 0;
+        private double playerShipX = 0;
+        private double playerShipY = 0;
         private double speed = 300; //speed of game
 
         private int laserDelay;
@@ -88,19 +89,19 @@ namespace Space_Invaders
 
             if ((keysPressed.Contains(Key.W) || keysPressed.Contains(Key.Up)) && playerShipY + (speed * deltaTime) + playerShip.Height < 600)
             {
-                Canvas.SetBottom(playerShip, playerShipY += (int)(speed * deltaTime));
+                Canvas.SetBottom(playerShip, playerShipY += (speed * deltaTime));
             }
             else if ((keysPressed.Contains(Key.S) || keysPressed.Contains(Key.Down)) && playerShipY - (speed * deltaTime) > 0)
             {
-                Canvas.SetBottom(playerShip, playerShipY -= (int)(speed * deltaTime));
+                Canvas.SetBottom(playerShip, playerShipY -= (speed * deltaTime));
             }
             if ((keysPressed.Contains(Key.A) || keysPressed.Contains(Key.Left)) && playerShipX - (speed * deltaTime) > 0)
             {
-                Canvas.SetLeft(playerShip, playerShipX -= (int)(speed * deltaTime));
+                Canvas.SetLeft(playerShip, playerShipX -= (speed * deltaTime));
             }
             else if ((keysPressed.Contains(Key.D) || keysPressed.Contains(Key.Right)) && playerShipX + (speed * deltaTime) + playerShip.Width < 600)
             {
-                Canvas.SetLeft(playerShip, playerShipX += (int)(speed * deltaTime));
+                Canvas.SetLeft(playerShip, playerShipX += (speed * deltaTime));
             }
             if (laserDelay == 0 && keysPressed.Contains(Key.Space))
             {
@@ -114,7 +115,7 @@ namespace Space_Invaders
             
             if (renderDelay == 0)
             {
-                DrawEnemies();
+                DrawEnemies(deltaTime);
                 renderDelay = renderDelayAmount;
             }
 
@@ -198,7 +199,7 @@ namespace Space_Invaders
             maincanvas.Children.Remove(nextLevelButton);
 
             Enemies.enemyCount = 0;
-            playerShipX = (int)((maincanvas.Width / 2) - (playerShip.Width / 2));
+            playerShipX = ((maincanvas.Width / 2) - (playerShip.Width / 2));
             playerShipY = 0;
 
             InitialiseEnemys();
@@ -245,7 +246,7 @@ namespace Space_Invaders
             levelNumber = 1;
 
             Enemies.enemyCount = 0;
-            playerShipX = (int)((maincanvas.Width / 2) - (playerShip.Width / 2));
+            playerShipX = ((maincanvas.Width / 2) - (playerShip.Width / 2));
             playerShipY = 0;
 
             gameOver = false;
@@ -281,60 +282,68 @@ namespace Space_Invaders
                 maincanvas.Children.Remove(playerShip);
         }
 
-        private void DrawEnemies()
+        private void DrawEnemies(double deltaTime)
         {
             int enemiesRemaining = enemy1s.Count + enemy2s.Count + enemy3s.Count;
-            bool addedRow = false;
+            bool addRow = false;
 
-            //enemy 1s
+            for (int i = enemy1s.Count - 1; i >= 0; i--)
+            {
+                enemy1s[i].Redraw(enemiesRemaining, levelNumber, deltaTime);
+            }
+            for (int i = enemy2s.Count - 1; i >= 0; i--)
+            {
+                enemy2s[i].Redraw(enemiesRemaining, levelNumber, deltaTime);
+            }
+            for (int i = enemy3s.Count - 1; i >= 0; i--)
+            {
+                enemy3s[i].Redraw(enemiesRemaining, levelNumber, deltaTime);
+            }
+
             for (int i = enemy1s.Count - 1; i >= 0; i--)
             {
                 if (enemy1s[i].TouchingBorder())
                 {
+                    UndoLastMovement();
                     IncrementRow();
-                    addedRow = true;
-                    break;
-                }
-            }
-            for (int i = enemy1s.Count-1; i >= 0; i--)
-            {
-                enemy1s[i].Redraw(enemiesRemaining, levelNumber);
-            }
-
-            //enemy 2s
-            if (!addedRow)
-            {
-                for (int i = enemy2s.Count - 1; i >= 0; i--)
-                {
-                    if (enemy2s[i].TouchingBorder())
-                    {
-                        IncrementRow();
-                        addedRow = true;
-                        break;
-                    }
+                    return;
                 }
             }
             for (int i = enemy2s.Count - 1; i >= 0; i--)
             {
-                enemy2s[i].Redraw(enemiesRemaining, levelNumber);
-            }
-
-            //enemy 3s
-            if(!addedRow)
-            {
-                for (int i = enemy3s.Count - 1; i >= 0; i--)
+                if (enemy2s[i].TouchingBorder())
                 {
-                    if (enemy3s[i].TouchingBorder())
-                    {
-                        IncrementRow();
-                        addedRow = true;
-                        break;
-                    }
+                    UndoLastMovement();
+                    IncrementRow();
+                    return;
                 }
             }
             for (int i = enemy3s.Count - 1; i >= 0; i--)
             {
-                enemy3s[i].Redraw(enemiesRemaining, levelNumber);
+                if (enemy3s[i].TouchingBorder())
+                {
+                    UndoLastMovement();
+                    IncrementRow();                  
+                    return;
+                }
+            }
+        }
+        private void UndoLastMovement()
+        {
+            for (int i = enemy1s.Count - 1; i >= 0; i--)
+            {
+                if(enemy1s[i].enemyX<0) enemy1s[i].enemyX += enemy1s[i].moveBy;
+                else enemy1s[i].enemyX -= enemy1s[i].moveBy;
+            }
+            for (int i = enemy2s.Count - 1; i >= 0; i--)
+            {
+                if (enemy2s[i].enemyX < 0) enemy2s[i].enemyX += enemy2s[i].moveBy;
+                else enemy2s[i].enemyX -= enemy2s[i].moveBy;
+            }
+            for (int i = enemy3s.Count - 1; i >= 0; i--)
+            {
+                if (enemy3s[i].enemyX < 0) enemy3s[i].enemyX += enemy3s[i].moveBy;
+                else enemy3s[i].enemyX -= enemy3s[i].moveBy;
             }
         }
 
@@ -357,6 +366,7 @@ namespace Space_Invaders
             {
                 enemy3s[i].AddRow();
             }
+
         }
 
         private void RemoveLaser()
@@ -469,8 +479,8 @@ namespace Space_Invaders
             laser = new Image();
             laser.Source = new BitmapImage(new Uri(laserPath));
             maincanvas.Children.Add(laser);
-            int laserY = playerShipY + 55;
-            int laserX = playerShipX + 27;
+            double laserY = playerShipY + 55;
+            double laserX = playerShipX + 27;
             Canvas.SetBottom(laser, laserY);
             Canvas.SetLeft(laser, laserX);
 
@@ -504,7 +514,7 @@ namespace Space_Invaders
             playerShip.Source = new BitmapImage(new Uri(playerShipPath));
             playerShip.Height = 57;
             playerShip.Width = 57;
-            playerShipX = (int)((maincanvas.Width / 2) - (playerShip.Width / 2));
+            playerShipX = ((maincanvas.Width / 2) - (playerShip.Width / 2));
 
             scoreDisplay.Text = "Score: " + score;
             scoreDisplay.Height = 16;
