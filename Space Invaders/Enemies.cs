@@ -21,12 +21,28 @@ namespace Space_Invaders
         private double spriteSeperation = 1.2; // multiplier
         private int borderSeperation = 30; // pixels
 
+        private int totalRows;
         private int enemiesPerRow;
         private int rowPos;
 
-        public bool forwards = true;
+        private bool forwards = true;
         private static int movements = 0; // how many times have they gone onto a new row
-        public double moveBy; // how many pixels to move at once, the bigger it is the harder it is
+        private double moveBy; // how many pixels to move at once, the bigger it is the harder it is
+
+        public int TotalRows
+        {
+            get => totalRows;
+        }
+
+        public int Row
+        {
+            get => row;
+        }
+
+        public double MoveBy
+        {
+            get => moveBy; 
+        }
 
         public Enemies(Canvas canvas)
         {
@@ -48,7 +64,7 @@ namespace Space_Invaders
             double progressRatio = (double)(enemyCount - enemiesLeft) / enemyCount;
 
             double baseSpeed = 20;
-            double maxSpeed = 100; 
+            double maxSpeed = 300; 
             double stageMultiplier = 1 + 0.25 * (stageNumber - 1); // each stage gets 25% faster
 
             // interpolate between baseSpeed and maxSpeed based on how many enemies are left
@@ -66,7 +82,7 @@ namespace Space_Invaders
             if (forwards) enemyX += moveBy;
             else enemyX -= moveBy;
 
-            enemyY = (maincanvas.Height - enemy.Height - 30) - (enemy.Height * spriteSeperation) * row;
+            enemyY = (maincanvas.Height - enemy.Height - MainWindow.TitleHeight()) - (enemy.Height * spriteSeperation) * row;
 
             Canvas.SetBottom(enemy, enemyY);
             Canvas.SetLeft(enemy, enemyX);
@@ -75,13 +91,13 @@ namespace Space_Invaders
         public char TouchingBorder()
         {
             //right hand border
-            if (enemyX + enemy.Width > maincanvas.Width)
+            if (enemyX + enemy.Width > maincanvas.Width && row != totalRows - 1)
             {
                 movements++;
                 return 'r';
             }
             //left hand border
-            if (enemyX < 0)
+            if (enemyX < 0 && row != totalRows - 1)
             {
                 movements++;
                 return 'l';
@@ -113,6 +129,7 @@ namespace Space_Invaders
 
         public void AddRow()
         {
+            if (row == totalRows - 1) return;
             row++;
 
             if (movements % 2 == 0) forwards = true;
@@ -131,9 +148,11 @@ namespace Space_Invaders
             enemy.Height = 30;
             enemy.Width = 30;
 
+            totalRows = (int)Math.Ceiling((maincanvas.Height-MainWindow.TitleHeight()) / (enemy.Height * spriteSeperation));
             enemiesPerRow = (int)Math.Floor((maincanvas.Width - borderSeperation * 2) / (enemy.Width * spriteSeperation));
             row = enemyNumber / enemiesPerRow;
             rowPos = enemyNumber % (enemiesPerRow);
+
             if (rowPos != 0)
             {
                 if ((rowPos * (enemy.Width * spriteSeperation) + borderSeperation) > maincanvas.Width - borderSeperation)
@@ -144,7 +163,7 @@ namespace Space_Invaders
                 else enemyX = (borderSeperation + (rowPos * (enemy.Width * spriteSeperation) + borderSeperation)) % maincanvas.Width - borderSeperation;
             }
             else enemyX = borderSeperation;
-            enemyY = (maincanvas.Height - enemy.Height - 30) - (enemy.Height * spriteSeperation) * row;
+            enemyY = (maincanvas.Height - enemy.Height - MainWindow.TitleHeight()) - (enemy.Height * spriteSeperation) * row;
 
             maincanvas.Children.Add(enemy);
 

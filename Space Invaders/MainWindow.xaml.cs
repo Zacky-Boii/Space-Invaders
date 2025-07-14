@@ -64,6 +64,9 @@ namespace Space_Invaders
 
         private int score;
 
+        public static int TitleHeight() => 30;
+
+
         public MainWindow()
         {
             InitializeComponent();
@@ -79,7 +82,6 @@ namespace Space_Invaders
         DateTime lastUpdate = DateTime.Now;
         private void GameLoop(object sender, EventArgs e)
         {
-            scoreDisplay.Text = "Score: " + score;
             levelDisplay.Text = "Level: " + levelNumber;
 
             //use delta time so it doesnt matter what monitor refresh rate is
@@ -113,6 +115,8 @@ namespace Space_Invaders
 
             RemoveLaser(); // remove it when laser goes off screen
 
+            CheckIfAtBottom();
+
             DetectHit();
             
             if (renderDelay == 0)
@@ -123,6 +127,41 @@ namespace Space_Invaders
 
             CheckGameState();
 
+        }
+        private void CheckIfAtBottom()
+        {
+            for (int i = enemy1s.Count - 1; i >= 0; i--)
+            {
+                if (enemy1s[i].Row == enemy1s[i].TotalRows-1 && (enemy1s[i].enemyX + enemy1s[i].enemy.Height < 0 || enemy1s[i].enemyX>maincanvas.Width))
+                {
+                    score -= enemy1s[i].AddPoints(levelNumber);
+                    scoreDisplay.Text = "Score: " + score;
+                    maincanvas.Children.Remove(enemy1s[i].enemy);
+                    enemy1s.Remove(enemy1s[i]);
+                }
+            }
+
+            for (int i = enemy2s.Count - 1; i >= 0; i--)
+            {
+                if (enemy2s[i].Row == enemy2s[i].TotalRows - 1 && (enemy2s[i].enemyX + enemy2s[i].enemy.Height < 0 || enemy2s[i].enemyX > maincanvas.Width))
+                {
+                    score -= enemy2s[i].AddPoints(levelNumber);
+                    scoreDisplay.Text = "Score: " + score;
+                    maincanvas.Children.Remove(enemy2s[i].enemy);
+                    enemy2s.Remove(enemy2s[i]);
+                }
+            }
+
+            for (int i = enemy3s.Count - 1; i >= 0; i--)
+            {
+                if (enemy3s[i].Row == enemy3s[i].TotalRows - 1 && (enemy3s[i].enemyX + enemy3s[i].enemy.Height < 0 || enemy3s[i].enemyX > maincanvas.Width))
+                {
+                    score -= enemy3s[i].AddPoints(levelNumber);
+                    scoreDisplay.Text = "Score: " + score;
+                    maincanvas.Children.Remove(enemy3s[i].enemy);
+                    enemy3s.Remove(enemy3s[i]);
+                }
+            }
         }
 
         private void CheckGameState()
@@ -276,6 +315,7 @@ namespace Space_Invaders
                 maincanvas.Children.Remove(enemy3s[i].enemy);
                 enemy3s.Remove(enemy3s[i]);
             }
+
             for (int j = activeLasers.Count - 1; j >= 0; j--)
             {
                 maincanvas.Children.Remove(activeLasers[j].laser);
@@ -337,18 +377,18 @@ namespace Space_Invaders
         {
             for (int i = enemy1s.Count - 1; i >= 0; i--)
             {
-                if (border == 'l') enemy1s[i].enemyX += enemy1s[i].moveBy;
-                else enemy1s[i].enemyX -= enemy1s[i].moveBy;
+                if (border == 'l') enemy1s[i].enemyX += enemy1s[i].MoveBy;
+                else enemy1s[i].enemyX -= enemy1s[i].MoveBy;
             }
             for (int i = enemy2s.Count - 1; i >= 0; i--)
             {
-                if (border == 'l') enemy2s[i].enemyX += enemy2s[i].moveBy;
-                else enemy2s[i].enemyX -= enemy2s[i].moveBy;
+                if (border == 'l') enemy2s[i].enemyX += enemy2s[i].MoveBy;
+                else enemy2s[i].enemyX -= enemy2s[i].MoveBy;
             }
             for (int i = enemy3s.Count - 1; i >= 0; i--)
             {
-                if (border == 'l') enemy3s[i].enemyX += enemy3s[i].moveBy;
-                else enemy3s[i].enemyX -= enemy3s[i].moveBy;
+                if (border == 'l') enemy3s[i].enemyX += enemy3s[i].MoveBy;
+                else enemy3s[i].enemyX -= enemy3s[i].MoveBy;
             }
         }
 
@@ -396,6 +436,7 @@ namespace Space_Invaders
                     if (enemy1s[i].TouchingLaser(activeLasers[j].LaserX, activeLasers[j].LaserY))
                     {
                         score += enemy1s[i].AddPoints(levelNumber);
+                        scoreDisplay.Text = "Score: " + score;
                         //remove enemy once touched by laser
                         maincanvas.Children.Remove(enemy1s[i].enemy);
                         enemy1s.Remove(enemy1s[i]);
@@ -417,6 +458,7 @@ namespace Space_Invaders
                     if (enemy2s[i].TouchingLaser(activeLasers[j].LaserX, activeLasers[j].LaserY))
                     {
                         score += enemy2s[i].AddPoints(levelNumber);
+                        scoreDisplay.Text = "Score: " + score;
                         //remove enemy once touched by laser
                         maincanvas.Children.Remove(enemy2s[i].enemy);
                         enemy2s.Remove(enemy2s[i]);
@@ -438,6 +480,7 @@ namespace Space_Invaders
                     if (enemy3s[i].TouchingLaser(activeLasers[j].LaserX, activeLasers[j].LaserY))
                     {
                         score += enemy3s[i].AddPoints(levelNumber);
+                        scoreDisplay.Text = "Score: " + score;
                         //remove enemy once touched by laser
                         maincanvas.Children.Remove(enemy3s[i].enemy);
                         enemy3s.Remove(enemy3s[i]);
@@ -534,7 +577,7 @@ namespace Space_Invaders
 
             TextBox Title = new TextBox();
             Title.Text = "SPACE INVADERS";
-            Title.Height = 30;
+            Title.Height = TitleHeight();
             Title.Width = 200;
             Title.Background = Brushes.Black;
             Title.BorderBrush = Brushes.Black;
