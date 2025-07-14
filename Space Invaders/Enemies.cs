@@ -21,23 +21,12 @@ namespace Space_Invaders
         private double spriteSeperation = 1.2; // multiplier
         private int borderSeperation = 30; // pixels
 
-        private int totalRows;
         private int enemiesPerRow;
         private int rowPos;
 
         private bool forwards = true;
         private static int movements = 0; // how many times have they gone onto a new row
         private double moveBy; // how many pixels to move at once, the bigger it is the harder it is
-
-        public int TotalRows
-        {
-            get => totalRows;
-        }
-
-        public int Row
-        {
-            get => row;
-        }
 
         public double MoveBy
         {
@@ -91,13 +80,13 @@ namespace Space_Invaders
         public char TouchingBorder()
         {
             //right hand border
-            if (enemyX + enemy.Width > maincanvas.Width && row != totalRows - 1)
+            if (enemyX + enemy.Width > maincanvas.Width)
             {
                 movements++;
                 return 'r';
             }
             //left hand border
-            if (enemyX < 0 && row != totalRows - 1)
+            if (enemyX < 0)
             {
                 movements++;
                 return 'l';
@@ -129,7 +118,6 @@ namespace Space_Invaders
 
         public void AddRow()
         {
-            if (row == totalRows - 1) return;
             row++;
 
             if (movements % 2 == 0) forwards = true;
@@ -148,7 +136,6 @@ namespace Space_Invaders
             enemy.Height = 30;
             enemy.Width = 30;
 
-            totalRows = (int)Math.Ceiling((maincanvas.Height-MainWindow.TitleHeight()) / (enemy.Height * spriteSeperation));
             enemiesPerRow = (int)Math.Floor((maincanvas.Width - borderSeperation * 2) / (enemy.Width * spriteSeperation));
             row = enemyNumber / enemiesPerRow;
             rowPos = enemyNumber % (enemiesPerRow);
