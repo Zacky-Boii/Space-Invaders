@@ -22,12 +22,12 @@ namespace Space_Invaders
     {
         private bool gameOver = false;
         private Image gameOverScreen = new Image();
-        private string gameOverScreenPath = "C:\\School\\Projects\\Space Invaders\\Images\\gameover.png";
+        private string gameOverScreenPath = "Images\\gameover.png";
         private Button restart = new Button();
 
         private Button nextLevelButton = new Button();
         private Image nextLevelScreen = new Image();
-        private string nextLevelScreenPath = "C:\\School\\Projects\\Space Invaders\\Images\\levelup.png";
+        private string nextLevelScreenPath = "Images\\levelup.png";
 
         private TextBox scoreDisplay = new TextBox();
         private TextBox levelDisplay = new TextBox();
@@ -48,7 +48,7 @@ namespace Space_Invaders
 
         private Button rules = new Button();
         Image rulesImage;
-        private string rulesImagePath = "C:\\School\\Projects\\Space Invaders\\Images\\rules.png";
+        private string rulesImagePath = "Images/rules.png";
         private Button removeRules;
         private Canvas rulesCanvas = new Canvas();
 
@@ -56,8 +56,8 @@ namespace Space_Invaders
         private Image playerShip = new Image();
         private Image laser;
 
-        private string playerShipPath = "C:\\School\\Projects\\Space Invaders\\Images\\Player Ship.png";
-        private string laserPath = "C:\\School\\Projects\\Space Invaders\\Images\\laser.png";
+        private string playerShipPath = "Images/Player.png";
+        private string laserPath = "Images/laser.png";
 
         private double playerShipX = 0;
         private double playerShipY = 0;
@@ -122,7 +122,7 @@ namespace Space_Invaders
             exampleThree.enemy.Height = 50;
             exampleThree.enemy.Width = 50;
             playerShipExample = new Image();
-            playerShipExample.Source = new BitmapImage(new Uri(playerShipPath));
+            playerShipExample.Source = new BitmapImage(new Uri(playerShipPath, UriKind.Relative));
             playerShipExample.Height = 60;
             playerShipExample.Width = 60;
 
@@ -167,7 +167,6 @@ namespace Space_Invaders
             hiScores.Click += hiScoresButton_Click;
             rules.Click += rulesButton_Click;
         }
-       
         private void RemoveMainMenuItems()
         {
             maincanvas.Children.Remove(mainTitle);
@@ -179,99 +178,7 @@ namespace Space_Invaders
             maincanvas.Children.Remove(hiScores);
             maincanvas.Children.Remove(rules);
         }
-        private void playButton_Click(object sender, RoutedEventArgs e)
-        {
-            InitialiseGame();
-        }
-        private void InitialiseGame()
-        {
-            play.Click -= playButton_Click;
 
-            Enemies.enemyCount = 0;
-
-            RemoveMainMenuItems();
-            ClearScreen();
-
-            InitialiseSprites();
-            AddGameInfo();
-
-
-
-            Canvas.SetLeft(playerShip, playerShipX);
-            Canvas.SetBottom(playerShip, 0);
-
-            //similar to vsync so it calls every time monitor refreshes
-
-            if (!isGameLoopRunning)
-            {
-                CompositionTarget.Rendering += GameLoop_Call;
-                isGameLoopRunning = true;
-            }
-        }
-
-        private void hiScoresButton_Click(object sender, RoutedEventArgs e)
-        {
-            DisplayHiScores();
-        }
-        private void DisplayHiScores()
-        {
-            hiScores.Click -= hiScoresButton_Click;
-        }
-
-        private void rulesButton_Click(object sender, RoutedEventArgs e)
-        {
-            DisplayRules();
-        }
-        private void DisplayRules()
-        {
-            rules.Click -= rulesButton_Click;
-            if (isGameLoopRunning)
-            {
-                CompositionTarget.Rendering -= GameLoop_Call;
-                isGameLoopRunning = false;
-            }
-
-            InitialiseRulesCanvas();
-            this.Content = rulesCanvas;
-
-            rulesImage = new Image();
-            rulesImage.Source = new BitmapImage(new Uri(rulesImagePath));
-            rulesImage.Height = maincanvas.Height;
-            rulesImage.Width = maincanvas.Width;
-            rulesCanvas.Children.Add(rulesImage);
-
-            removeRules = new Button();
-            removeRules.Content = "Main Menu";
-            removeRules.Height = 50;
-            removeRules.Width = 200;
-            Canvas.SetLeft(removeRules, 400);
-            Canvas.SetTop(removeRules, 30);
-            rulesCanvas.Children.Add(removeRules);
-
-            removeRules.Click += removeRulesButton_Click;
-        }
-
-        private void InitialiseRulesCanvas()
-        {
-            rulesCanvas.Height = 600;
-            rulesCanvas.Width = 600;
-            rulesCanvas.Background = Brushes.Black;
-        }
-
-        private void removeRulesButton_Click(object sender, RoutedEventArgs e)
-        {
-            RemoveRules();
-        }
-        private void RemoveRules()
-        {
-            removeRules.Click -= removeRulesButton_Click;
-
-            rulesCanvas.Children.Remove(removeRules);
-            rulesCanvas.Children.Remove(rulesImage);
-
-            this.Content = maincanvas;
-            rules.Click += rulesButton_Click;
-        }
         private void mainMenuButton_Click(object sender, RoutedEventArgs e)
         {
             ReturnToMainMenu();
@@ -386,6 +293,173 @@ namespace Space_Invaders
         {
            GameLoop();
         }
+        private void CheckGameState()
+        {
+            gameOver = false;
+            //check if any ships are touching the player
+            for (int i = enemy1s.Count - 1; i >= 0; i--)
+            {
+                if (enemy1s[i].TouchingPlayer(playerShipX, playerShipY, playerShip))
+                {
+                    gameOver = true;
+                }
+            }
+
+            for (int i = enemy2s.Count - 1; i >= 0; i--)
+            {
+                if (enemy2s[i].TouchingPlayer(playerShipX, playerShipY, playerShip))
+                {
+                    gameOver = true;
+                }
+            }
+
+            for (int i = enemy3s.Count - 1; i >= 0; i--)
+            {
+                if (enemy3s[i].TouchingPlayer(playerShipX, playerShipY, playerShip))
+                {
+                    gameOver = true;
+                }
+            }
+
+            //check if all enemies are dead
+            if (enemy1s.Count == 0 && enemy2s.Count == 0 && enemy3s.Count == 0)
+            {
+                NextLevel();
+            }
+
+            if (gameOver)
+            {
+                GameOver();
+            }
+        }
+
+        private void playButton_Click(object sender, RoutedEventArgs e)
+        {
+            InitialiseGame();
+        }
+        private void InitialiseGame()
+        {
+            play.Click -= playButton_Click;
+
+            Enemies.enemyCount = 0;
+
+            RemoveMainMenuItems();
+            ClearScreen();
+
+            InitialiseSprites();
+            AddGameInfo();
+
+
+
+            Canvas.SetLeft(playerShip, playerShipX);
+            Canvas.SetBottom(playerShip, 0);
+
+            //similar to vsync so it calls every time monitor refreshes
+
+            if (!isGameLoopRunning)
+            {
+                CompositionTarget.Rendering += GameLoop_Call;
+                isGameLoopRunning = true;
+            }
+        }
+
+        private void hiScoresButton_Click(object sender, RoutedEventArgs e)
+        {
+            DisplayHiScores();
+        }
+        private void DisplayHiScores()
+        {
+            hiScores.Click -= hiScoresButton_Click;
+        }
+        private void WriteToHiScores()
+        {
+
+        }
+        private void ReadFromHiScores()
+        {
+
+        }
+
+        private void rulesButton_Click(object sender, RoutedEventArgs e)
+        {
+            DisplayRules();
+        }
+        private void DisplayRules()
+        {
+            rules.Click -= rulesButton_Click;
+            if (isGameLoopRunning)
+            {
+                CompositionTarget.Rendering -= GameLoop_Call;
+                isGameLoopRunning = false;
+            }
+
+            InitialiseRulesCanvas();
+            this.Content = rulesCanvas; 
+
+            rulesImage = new Image();
+            rulesImage.Source = new BitmapImage(new Uri(rulesImagePath, UriKind.Relative));
+            rulesImage.Height = maincanvas.Height;
+            rulesImage.Width = maincanvas.Width;
+            rulesCanvas.Children.Add(rulesImage);
+
+            removeRules = new Button();
+            removeRules.Content = "Main Menu";
+            removeRules.Height = 50;
+            removeRules.Width = 200;
+            Canvas.SetLeft(removeRules, 375);
+            Canvas.SetTop(removeRules, 25);
+            rulesCanvas.Children.Add(removeRules);
+
+            //these are for visuals
+            Image exampleOneRules = new Image();
+            exampleOneRules.Height = 50;
+            exampleOneRules.Width = 50;
+            Image exampleTwoRules = new Image();
+            exampleTwoRules.Height = 50;
+            exampleTwoRules.Width = 50;
+            Image exampleThreeRules = new Image();
+            exampleThreeRules.Height = 50;
+            exampleThreeRules.Width = 50;
+            exampleOneRules.Source = new BitmapImage(new Uri("Images/Enemy1.png", UriKind.Relative));
+            exampleTwoRules.Source = new BitmapImage(new Uri("Images/Enemy2.png", UriKind.Relative));
+            exampleThreeRules.Source = new BitmapImage(new Uri("Images/Enemy3.png", UriKind.Relative));
+
+            //enemy 1 - left
+            Canvas.SetLeft(exampleOneRules, 65);
+            Canvas.SetTop(exampleOneRules, 225);
+            //enemy2 - middle
+            Canvas.SetLeft(exampleTwoRules, 283);
+            Canvas.SetTop(exampleTwoRules, 225);
+            //enemy3 - right
+            Canvas.SetLeft(exampleThreeRules, 465);
+            Canvas.SetTop(exampleThreeRules, 225);
+
+            rulesCanvas.Children.Add(exampleOneRules);
+            rulesCanvas.Children.Add(exampleTwoRules);
+            rulesCanvas.Children.Add(exampleThreeRules);
+
+            removeRules.Click += removeRulesButton_Click;
+        }
+        private void InitialiseRulesCanvas()
+        {
+            rulesCanvas.Height = 600;
+            rulesCanvas.Width = 600;
+            rulesCanvas.Background = Brushes.Black;
+        }
+        private void removeRulesButton_Click(object sender, RoutedEventArgs e)
+        {
+            RemoveRules();
+        }
+        private void RemoveRules()
+        {
+            removeRules.Click -= removeRulesButton_Click;
+
+            rulesCanvas.Children.Clear();
+
+            this.Content = maincanvas;
+            rules.Click += rulesButton_Click;
+        }
+
         private void CheckIfAtBottom()
         {
             for (int i = enemy1s.Count - 1; i >= 0; i--)
@@ -422,46 +496,6 @@ namespace Space_Invaders
             }
         }
 
-        private void CheckGameState()
-        {
-            gameOver = false;
-            //check if any ships are touching the player
-            for (int i = enemy1s.Count - 1; i >= 0; i--)
-            {
-                if (enemy1s[i].TouchingPlayer(playerShipX, playerShipY, playerShip))
-                {
-                    gameOver = true;
-                }
-            }
-
-            for (int i = enemy2s.Count - 1; i >= 0; i--)
-            {
-                if (enemy2s[i].TouchingPlayer(playerShipX, playerShipY, playerShip))
-                {
-                    gameOver = true;
-                }
-            }
-
-            for (int i = enemy3s.Count - 1; i >= 0; i--)
-            {
-                if (enemy3s[i].TouchingPlayer(playerShipX, playerShipY, playerShip))
-                {
-                    gameOver = true;
-                }
-            }
-
-            //check if all enemies are dead
-            if(enemy1s.Count == 0 && enemy2s.Count == 0 && enemy3s.Count == 0)
-            {
-                NextLevel();
-            }
-
-            if(gameOver)
-            {
-                GameOver();
-            }
-        }
-
         private void NextLevel()
         {
             if (isGameLoopRunning)
@@ -472,7 +506,7 @@ namespace Space_Invaders
 
             ClearScreen();
 
-            nextLevelScreen.Source = new BitmapImage(new Uri(nextLevelScreenPath));
+            nextLevelScreen.Source = new BitmapImage(new Uri(nextLevelScreenPath, UriKind.Relative));
             nextLevelScreen.Height = 300;
             nextLevelScreen.Width = 600;
             maincanvas.Children.Add(nextLevelScreen);
@@ -529,7 +563,7 @@ namespace Space_Invaders
             score = 0;
             levelNumber = 1;
 
-            gameOverScreen.Source = new BitmapImage(new Uri(gameOverScreenPath));
+            gameOverScreen.Source = new BitmapImage(new Uri(gameOverScreenPath, UriKind.Relative));
             gameOverScreen.Height = 300;
             gameOverScreen.Width = 600;
             maincanvas.Children.Add(gameOverScreen);
@@ -555,6 +589,7 @@ namespace Space_Invaders
 
 
         }
+
         private void RestartButton_Click(object sender, RoutedEventArgs e)
         {
             Restart();
@@ -667,6 +702,7 @@ namespace Space_Invaders
                 }
             }
         }
+
         private void UndoLastMovement(char border)
         {
             for (int i = enemy1s.Count - 1; i >= 0; i--)
@@ -822,7 +858,7 @@ namespace Space_Invaders
         private void FireLaser()
         {
             laser = new Image();
-            laser.Source = new BitmapImage(new Uri(laserPath));
+            laser.Source = new BitmapImage(new Uri(laserPath, UriKind.Relative));
             maincanvas.Children.Add(laser);
             double laserY = playerShipY + 55;
             double laserX = playerShipX + 27;
@@ -852,12 +888,11 @@ namespace Space_Invaders
             this.Height = 600;
             this.Width = 600;
 
-            playerShip.Source = new BitmapImage(new Uri(playerShipPath));
+            playerShip.Source = new BitmapImage(new Uri(playerShipPath, UriKind.Relative));
 
             maincanvas.Height = 600;
             maincanvas.Width = 600;
             maincanvas.Background = Brushes.Black;
         }
-
     }
 }

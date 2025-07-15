@@ -11,8 +11,9 @@ namespace Space_Invaders
 {
     internal class Enemy3 : Enemies
     {
-        const string imagePath = "C:\\School\\Projects\\Space Invaders\\Images\\zain.png";
+        private string imagePath = "Images/Enemy3.png";
         private int basePoints = 30;
+        public string image => imagePath;
 
         public Enemy3(Canvas maincanvas) : base(maincanvas)
         {
@@ -26,7 +27,7 @@ namespace Space_Invaders
 
         public override void AddImageSource()
         {
-            enemy.Source = new BitmapImage(new Uri(imagePath));
+            enemy.Source = new BitmapImage(new Uri(imagePath, UriKind.Relative));
         }
     }
 }
