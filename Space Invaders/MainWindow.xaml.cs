@@ -44,6 +44,7 @@ namespace Space_Invaders
 
         private Button hiScores = new Button();
 
+        private bool isGameLoopRunning = false;
 
         private Button rules = new Button();
         Image rulesImage;
@@ -186,17 +187,26 @@ namespace Space_Invaders
         {
             play.Click -= playButton_Click;
 
+            Enemies.enemyCount = 0;
+
             RemoveMainMenuItems();
             ClearScreen();
 
             InitialiseSprites();
             AddGameInfo();
 
+
+
             Canvas.SetLeft(playerShip, playerShipX);
             Canvas.SetBottom(playerShip, 0);
 
             //similar to vsync so it calls every time monitor refreshes
-            CompositionTarget.Rendering += GameLoop;
+
+            if (!isGameLoopRunning)
+            {
+                CompositionTarget.Rendering += GameLoop_Call;
+                isGameLoopRunning = true;
+            }
         }
 
         private void hiScoresButton_Click(object sender, RoutedEventArgs e)
@@ -215,7 +225,11 @@ namespace Space_Invaders
         private void DisplayRules()
         {
             rules.Click -= rulesButton_Click;
-            CompositionTarget.Rendering -= GameLoop;
+            if (isGameLoopRunning)
+            {
+                CompositionTarget.Rendering -= GameLoop_Call;
+                isGameLoopRunning = false;
+            }
 
             InitialiseRulesCanvas();
             this.Content = rulesCanvas;
@@ -265,9 +279,13 @@ namespace Space_Invaders
         private void ReturnToMainMenu()
         {
             mainMenuButton.Click -= mainMenuButton_Click;
+            if (isGameLoopRunning)
+            {
+                CompositionTarget.Rendering -= GameLoop_Call;
+                isGameLoopRunning = false;
+            }
 
-            if(rulesImage != null) maincanvas.Children.Remove(rulesImage);
-            maincanvas.Children.Remove(mainMenuButton);
+            maincanvas.Children.Clear();
 
             ClearScreen();
 
@@ -317,7 +335,7 @@ namespace Space_Invaders
         }
 
         DateTime lastUpdate = DateTime.Now;
-        private void GameLoop(object sender, EventArgs e)
+        private void GameLoop()
         {
             levelDisplay.Text = "Level: " + levelNumber;
 
@@ -325,7 +343,7 @@ namespace Space_Invaders
             var now = DateTime.Now;
             double deltaTime = (now - lastUpdate).TotalSeconds;
             lastUpdate = now;
-            if (laserDelay> 0) laserDelay-= 1;
+            if (laserDelay > 0) laserDelay -= 1;
             if (renderDelay > 0) renderDelay -= 1;
 
             if ((keysPressed.Contains(Key.W) || keysPressed.Contains(Key.Up)) && playerShipY + (speed * deltaTime) + playerShip.Height < 600)
@@ -355,7 +373,7 @@ namespace Space_Invaders
             CheckIfAtBottom();
 
             DetectHit();
-            
+
             if (renderDelay == 0)
             {
                 DrawEnemies(deltaTime);
@@ -363,7 +381,10 @@ namespace Space_Invaders
             }
 
             CheckGameState();
-
+        }
+        private void GameLoop_Call(object sender, EventArgs e)
+        {
+           GameLoop();
         }
         private void CheckIfAtBottom()
         {
@@ -443,7 +464,11 @@ namespace Space_Invaders
 
         private void NextLevel()
         {
-            CompositionTarget.Rendering -= GameLoop;
+            if (isGameLoopRunning)
+            {
+                CompositionTarget.Rendering -= GameLoop_Call;
+                isGameLoopRunning = false;
+            }
 
             ClearScreen();
 
@@ -482,14 +507,27 @@ namespace Space_Invaders
             playerShipY = 0;
 
             InitialiseSprites();
-            CompositionTarget.Rendering += GameLoop;
+
+            if (!isGameLoopRunning)
+            {
+                CompositionTarget.Rendering += GameLoop_Call;
+                isGameLoopRunning = true;
+            }
         }
 
         private void GameOver()
         {
-            CompositionTarget.Rendering -= GameLoop;
+            if (isGameLoopRunning)
+            {
+                CompositionTarget.Rendering -= GameLoop_Call;
+                isGameLoopRunning = false;
+            }
 
             ClearScreen();
+
+            Enemies.enemyCount = 0;
+            score = 0;
+            levelNumber = 1;
 
             gameOverScreen.Source = new BitmapImage(new Uri(gameOverScreenPath));
             gameOverScreen.Height = 300;
@@ -500,13 +538,22 @@ namespace Space_Invaders
             restart.Content = "Play Again?";
             restart.Height = 50;
             restart.Width = 200;
-            Canvas.SetLeft(restart, (maincanvas.Width/2) - (restart.Width / 2));
+            Canvas.SetLeft(restart, (maincanvas.Width/4) - (restart.Width / 2));
             Canvas.SetTop(restart, 450);
 
+            mainMenuButton.Content = "Main Menu";
+            mainMenuButton.Height = 50;
+            mainMenuButton.Width = 200;
+            Canvas.SetLeft(mainMenuButton, (3*maincanvas.Width / 4) - (mainMenuButton.Width / 2));
+            Canvas.SetTop(mainMenuButton, 450);
+
             maincanvas.Children.Add(restart);
+            maincanvas.Children.Add(mainMenuButton);
 
             restart.Click += RestartButton_Click;
-            
+            mainMenuButton.Click += mainMenuButton_Click;
+
+
         }
         private void RestartButton_Click(object sender, RoutedEventArgs e)
         {
@@ -515,15 +562,17 @@ namespace Space_Invaders
         private void Restart()
         {
             restart.Click -= RestartButton_Click;
-
+            if (isGameLoopRunning)
+            {
+                CompositionTarget.Rendering -= GameLoop_Call;
+                isGameLoopRunning = false;
+            }
 
             maincanvas.Children.Remove(gameOverScreen);
             maincanvas.Children.Remove(restart);
+            maincanvas.Children.Remove(mainMenuButton);
 
             ClearScreen();
-
-            score = 0;
-            levelNumber = 1;
 
             scoreDisplay.Text = "Score: " + score;
 
@@ -534,7 +583,11 @@ namespace Space_Invaders
             gameOver = false;
 
             InitialiseSprites();
-            CompositionTarget.Rendering += GameLoop;
+            if (!isGameLoopRunning)
+            {
+                CompositionTarget.Rendering += GameLoop_Call;
+                isGameLoopRunning = true;
+            }
         }
 
         private void ClearScreen()
