@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
+using System.IO;
+using System.Numerics;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
@@ -43,6 +45,9 @@ namespace Space_Invaders
         private Button play = new Button();
 
         private Button hiScores = new Button();
+        private string hiScoreFileName = "Hi-Scores/ScoreList.txt";
+        private List<string> scoresList = new List<string>();
+        private TextBox hiScoreTextBox;
 
         private bool isGameLoopRunning = false;
 
@@ -82,9 +87,13 @@ namespace Space_Invaders
         private int enemy3Count = 15;
 
         private int score;
+        private int finalScore;
 
         public static int TitleHeight() => 30;
 
+        private TextBox nameInput;
+        private Button submitName;
+        private string name = "";
 
         public MainWindow()
         {
@@ -288,6 +297,7 @@ namespace Space_Invaders
             }
 
             CheckGameState();
+            Debug.WriteLine(name);
         }
         private void GameLoop_Call(object sender, EventArgs e)
         {
@@ -370,14 +380,143 @@ namespace Space_Invaders
         private void DisplayHiScores()
         {
             hiScores.Click -= hiScoresButton_Click;
-        }
-        private void WriteToHiScores()
-        {
 
+            RemoveMainMenuItems();
+
+            ReadFromHiScores();
+
+            List<KeyValuePair<string, int>> scores = new List<KeyValuePair<string, int>>();
+
+            for (int i = 0; i < scoresList.Count; i++)
+            {
+                string[] split = scoresList[i].Split(' ');
+                //0 is name and 1 is score
+                string name = split[0];
+                if (split.Length == 1) break;
+                int score = int.Parse(split[1]);
+                scores.Add(new KeyValuePair<string, int>(name, score));
+            }
+
+            scores.Sort(CompareScoreDescending);
+
+            string finalOutput = "HI SCORES:\n\n";
+            for (int i = 0; i < scores.Count; i++)
+            {
+                string name = scores[i].Key;
+                int score = scores[i].Value;
+
+                finalOutput += name + " " + score + "\n";
+            }
+
+
+
+            hiScoreTextBox = new TextBox();
+            hiScoreTextBox.Width = maincanvas.Width;
+            hiScoreTextBox.Text = finalOutput;
+            hiScoreTextBox.IsReadOnly = true;
+            hiScoreTextBox.HorizontalAlignment = HorizontalAlignment.Center;
+            hiScoreTextBox.Background = Brushes.Black;
+            hiScoreTextBox.BorderBrush = Brushes.Black;
+            hiScoreTextBox.Foreground = Brushes.White;
+            hiScoreTextBox.FontSize = 50;
+            hiScoreTextBox.IsHitTestVisible = false;
+            maincanvas.Children.Add(hiScoreTextBox);
+
+            mainMenuButton.Content = "Main Menu";
+            mainMenuButton.Height = 50;
+            mainMenuButton.Width = 200;
+            Canvas.SetRight(mainMenuButton, 0);
+            Canvas.SetTop(mainMenuButton, 0);
+
+            maincanvas.Children.Add(mainMenuButton);
+
+            mainMenuButton.Click += mainMenuButton_Click;
+        }
+
+        private int CompareScoreDescending(KeyValuePair<string, int> a, KeyValuePair<string, int> b)
+        {
+            return b.Value.CompareTo(a.Value);
+        }
+
+        private void WriteToHiScores(int finalScore)
+        {
+            string playerName = name;
+            hiScoreFileName = "Hi-Scores/ScoreList.txt";
+            string relativePath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, hiScoreFileName);
+            string toWrite = name + " " + finalScore;
+
+            File.AppendAllText(relativePath, toWrite + Environment.NewLine);
         }
         private void ReadFromHiScores()
         {
+            string relativePath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, hiScoreFileName);
 
+            StreamReader sr = new StreamReader(relativePath);
+           
+            string? line = sr.ReadLine();
+
+            while (line != null)
+            {
+                scoresList.Add(line);
+                line = sr.ReadLine();
+            }
+            
+            sr.Close();
+        }
+        private void GetName()
+        {
+            string defaultText = "Enter name to save score...";
+            nameInput = new TextBox();
+            nameInput.Height = 38;
+            nameInput.Width = 370;
+            nameInput.Text = defaultText;
+            nameInput.FontSize = 30;
+            nameInput.Foreground = Brushes.Gray;
+            nameInput.TextAlignment = TextAlignment.Center;
+            Canvas.SetTop(nameInput, 5 * maincanvas.Width / 10);
+            Canvas.SetLeft(nameInput, maincanvas.Width / 2 - nameInput.Width / 2);
+            maincanvas.Children.Add(nameInput);
+
+            nameInput.GotFocus += (s, e) =>
+            {
+                if (nameInput.Text == defaultText)
+                {
+                    nameInput.Text = "";
+                    nameInput.Foreground = Brushes.Black;
+                }
+            };
+
+            nameInput.LostFocus += (s, e) =>
+            {
+                if (string.IsNullOrWhiteSpace(nameInput.Text))
+                {
+                    nameInput.Text = defaultText;
+                    nameInput.Foreground = Brushes.Gray;
+                }
+            };
+
+            submitName = new Button();
+            submitName.Height = 38;
+            submitName.Width = 150;
+            submitName.Content = "Submit";
+            submitName.FontSize = 24;
+            Canvas.SetLeft(submitName, maincanvas.Width/2 - submitName.Width/2);
+            Canvas.SetTop(submitName, 6 * maincanvas.Width / 10);
+            maincanvas.Children.Add(submitName);
+
+            submitName.Click += (s, e) =>
+            {
+                if (nameInput.Text != defaultText)
+                {
+                    name = nameInput.Text;
+                    defaultText = "Score submitted!";
+                    WriteToHiScores(finalScore);
+                    nameInput.Foreground = Brushes.Gray;
+                    nameInput.Text = defaultText;
+                    Canvas.SetTop(nameInput, 5 * maincanvas.Width / 10);
+                    Canvas.SetLeft(nameInput, maincanvas.Width / 2 - nameInput.Width / 2);
+                }        
+            };
         }
 
         private void rulesButton_Click(object sender, RoutedEventArgs e)
@@ -560,14 +699,16 @@ namespace Space_Invaders
             ClearScreen();
 
             Enemies.enemyCount = 0;
+            finalScore = score;
             score = 0;
             levelNumber = 1;
 
             gameOverScreen.Source = new BitmapImage(new Uri(gameOverScreenPath, UriKind.Relative));
-            gameOverScreen.Height = 300;
-            gameOverScreen.Width = 600;
+            gameOverScreen.Height = 150;
+            gameOverScreen.Width = 300;
             maincanvas.Children.Add(gameOverScreen);
-            Canvas.SetTop(gameOverScreen, (maincanvas.Height/2) - (gameOverScreen.Height/2));
+            Canvas.SetTop(gameOverScreen, (maincanvas.Height/3) - (gameOverScreen.Height/2));
+            Canvas.SetLeft(gameOverScreen, (maincanvas.Width/2) - (gameOverScreen.Width/2));
 
             restart.Content = "Play Again?";
             restart.Height = 50;
@@ -581,8 +722,12 @@ namespace Space_Invaders
             Canvas.SetLeft(mainMenuButton, (3*maincanvas.Width / 4) - (mainMenuButton.Width / 2));
             Canvas.SetTop(mainMenuButton, 450);
 
+
+
             maincanvas.Children.Add(restart);
             maincanvas.Children.Add(mainMenuButton);
+
+            GetName();
 
             restart.Click += RestartButton_Click;
             mainMenuButton.Click += mainMenuButton_Click;
@@ -606,6 +751,8 @@ namespace Space_Invaders
             maincanvas.Children.Remove(gameOverScreen);
             maincanvas.Children.Remove(restart);
             maincanvas.Children.Remove(mainMenuButton);
+            maincanvas.Children.Remove(nameInput);
+            maincanvas.Children.Remove(submitName);
 
             ClearScreen();
 
