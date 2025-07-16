@@ -86,7 +86,7 @@ namespace Space_Invaders
         List<Enemy3> enemy3s = new List<Enemy3>();
         private int enemy3Count = 15;
 
-        private int score;
+        private int score = int.MaxValue - 1 ;
         private int finalScore;
 
         public static int TitleHeight() => 30;
@@ -391,11 +391,18 @@ namespace Space_Invaders
             {
                 string[] split = scoresList[i].Split(' ');
                 //0 is name and 1 is score
-                string name = split[0];
+                string name = "";
+                for (int j = 0; j < split.Length-1; j++)
+                {
+                    if(j != split.Length-2) name += split[j]+" ";
+                    else name+= split[j];   
+                }
                 if (split.Length == 1) break;
-                int score = int.Parse(split[1]);
+                int score = int.Parse(split[split.Length-1]);
                 scores.Add(new KeyValuePair<string, int>(name, score));
             }
+
+            scoresList.Clear();
 
             scores.Sort(CompareScoreDescending);
 
@@ -422,6 +429,7 @@ namespace Space_Invaders
             hiScoreTextBox.IsHitTestVisible = false;
             maincanvas.Children.Add(hiScoreTextBox);
 
+            mainMenuButton = new Button();
             mainMenuButton.Content = "Main Menu";
             mainMenuButton.Height = 50;
             mainMenuButton.Width = 200;
