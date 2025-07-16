@@ -69,7 +69,7 @@ namespace Space_Invaders
         private double speed = 300; //speed of game
 
         private int laserDelay;
-        private int laserDelayAmount = 1; // in frames
+        private int laserDelayAmount = 12; // in frames
         private int renderDelay;
         private int renderDelayAmount = 1; // in frames
 
@@ -86,7 +86,7 @@ namespace Space_Invaders
         List<Enemy3> enemy3s = new List<Enemy3>();
         private int enemy3Count = 15;
 
-        private int score = int.MaxValue - 1 ;
+        private int score;
         private int finalScore;
 
         public static int TitleHeight() => 30;
