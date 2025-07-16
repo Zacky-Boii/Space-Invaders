@@ -61,7 +61,7 @@ namespace Space_Invaders
         private Image playerShip = new Image();
         private Image laser;
 
-        private string playerShipPath = "Images/Player.png";
+        private string playerShipPath = "Images/bearShip.png";
         private string laserPath = "Images/laser.png";
 
         private double playerShipX = 0;
@@ -517,6 +517,7 @@ namespace Space_Invaders
                 if (nameInput.Text != defaultText)
                 {
                     name = nameInput.Text;
+                    name = name.Substring(0,15);
                     defaultText = "Score submitted!";
                     WriteToHiScores(finalScore);
                     nameInput.Foreground = Brushes.Gray;

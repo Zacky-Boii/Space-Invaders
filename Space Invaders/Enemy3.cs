@@ -11,7 +11,7 @@ namespace Space_Invaders
 {
     internal class Enemy3 : Enemies
     {
-        private string imagePath = "Images/Enemy3.png";
+        private string imagePath = "Images/bearEnemy3.png";
         private int basePoints = 30;
         public string image => imagePath;
 
