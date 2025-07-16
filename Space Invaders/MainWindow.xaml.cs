@@ -69,7 +69,7 @@ namespace Space_Invaders
         private double speed = 300; //speed of game
 
         private int laserDelay;
-        private int laserDelayAmount = 12; // in frames
+        private int laserDelayAmount = 8; // in frames 
         private int renderDelay;
         private int renderDelayAmount = 1; // in frames
 
@@ -78,10 +78,10 @@ namespace Space_Invaders
         List<Laser> activeLasers = new List<Laser>();
 
         List<Enemy1> enemy1s = new List<Enemy1>();
-        private int enemy1Count = 30;
+        private int enemy1Count = 15;
 
         List<Enemy2> enemy2s = new List<Enemy2>();
-        private int enemy2Count = 30;
+        private int enemy2Count = 15;
 
         List<Enemy3> enemy3s = new List<Enemy3>();
         private int enemy3Count = 15;
